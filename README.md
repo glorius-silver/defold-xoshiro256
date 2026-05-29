@@ -12,7 +12,7 @@ More info about xoshiro256++ and splitmix64 can be found [here](https://prng.di.
 Add to your `game.project` dependencies:
 
 ```
-https://github.com/<your-org>/defold-xoshiro256/archive/main.zip
+https://github.com/glorius-silver/defold-xoshiro256/archive/master.zip
 ```
 
 ---
