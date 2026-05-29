@@ -1,3 +1,4 @@
+![](/xoshiro256_banner.png)
 # defold-xoshiro256: Defold Native Extension
 
 A fast, high-quality PRNG for [Defold](https://defold.com) based on the
