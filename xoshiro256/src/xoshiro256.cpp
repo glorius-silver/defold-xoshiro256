@@ -177,6 +177,24 @@ static int L_seed_state(lua_State *L) {
     return 1;
 }
 
+//xoshiro256.clone(state) -> state
+static int L_clone_state(lua_State *L) {
+    DM_LUA_STACK_CHECK(L, 1);
+
+    Xoshiro256State *old_st = check_state(L, 1);
+    Xoshiro256State *new_st = (Xoshiro256State *)lua_newuserdata(L, sizeof(Xoshiro256State));
+
+    new_st->s[0] = old_st->s[0];
+    new_st->s[1] = old_st->s[1];
+    new_st->s[2] = old_st->s[2];
+    new_st->s[3] = old_st->s[3];
+
+    luaL_getmetatable(L, XOSHIRO256_METATABLE);
+    lua_setmetatable(L, -2);
+
+    return 1;
+}
+
 // xoshiro256.to_string(state) -> string
 // 4 uint64 values separated by ':', e.g. "s0:s1:s2:s3"
 static int L_state_to_string(lua_State *L) {
@@ -293,11 +311,12 @@ static int L_state_tostring_meta(lua_State *L) {
 }
 
 static const luaL_reg Module_methods[] = {
-    { "seed",      L_seed_state      },
-    { "to_string", L_state_to_string },
+    { "seed",        L_seed_state      },
+    { "clone",       L_clone_state     },
+    { "to_string",   L_state_to_string },
     { "from_string", L_string_to_state },
-    { "random",          L_random          },
-    { NULL, NULL }
+    { "random",      L_random          },
+    { NULL,          NULL              }
 };
 
 static void LuaInit(lua_State *L) {

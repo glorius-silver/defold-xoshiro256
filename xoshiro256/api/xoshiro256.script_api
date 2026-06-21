@@ -26,6 +26,15 @@
     returns:
     - name: value
       type: number
+  - name: clone
+    type: function
+    desc: Creates and returns an independent copy of the state
+    parameters:
+    - name: state
+      type: userdata
+    returns:
+    - name: cloned_state
+      type: userdata
   - name: to_string
     type: function
     desc: Convert state to string. Used for saving the state. String is formed as 4 uint64 values separated by ':', e.g. "s0:s1:s2:s3".

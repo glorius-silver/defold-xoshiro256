@@ -13,6 +13,11 @@ xoshiro256 = {}
 ---@return xoshiro256.state
 function xoshiro256.seed(seed) end
 
+---Creates and returns an independent copy of the state
+---@param state xoshiro256.state
+---@return xoshiro256.state cloned_state
+function xoshiro256.clone(state) end
+
 ---Convert state to string. Used for saving the state. String is formed as 4 uint64 values separated by ':', e.g. "s0:s1:s2:s3".
 ---@param state xoshiro256.state
 ---@return string

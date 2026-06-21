@@ -86,6 +86,17 @@ local restored_state = xoshiro256.from_string(saved_state)
 
 ---
 
+### `xoshiro256.clone(state: userdata): userdata cloned_state`
+
+Creates and returns an independent copy of the state.
+
+```lua
+local cloned_state = xoshiro256.clone(state)
+-- cloned_state will produce the exact same random sequence
+```
+
+---
+
 ## How to replace built-in math.randomseed and math.random with xoshiro256
 
 ```lua
