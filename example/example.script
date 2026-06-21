@@ -1,97 +1,36 @@
-local function simple_test(state)
-	print(state)
-	local r1 = xoshiro256.random(state)
-	local r2 = xoshiro256.random(state, 100)
-	local r3 = xoshiro256.random(state, 101, 142)
-
-	assert(r1 >= 0 and r1 <= 1, "Float out of bounds")
-	assert(r2 >= 1 and r2 <= 100, "Single limit out of bounds")
-	assert(r3 >= 101 and r3 <= 142, "Dual limit out of bounds")
-	print("Simple test passed!")
-end
-
-local function saved_state_test(state)
-	local saved_state = xoshiro256.to_string(state)
-	local data = {}
-
-	for i = 1, 100 do
-		data[i] = xoshiro256.random(state)
-	end
-
-	local restored_state = xoshiro256.from_string(saved_state)
-	assert(saved_state == xoshiro256.to_string(restored_state), "State mismatch")
-	for i = 1, 100 do
-		assert(xoshiro256.random(restored_state) == data[i], "State mismatch")
-	end
-	print("Save test passed!")
-end
-
-local function calculate_chi_square(state)
-	local buckets = {}
-	local num_buckets = 10
-	local num_samples = 100000
-
-	for i = 1, num_buckets do
-		buckets[i] = 0
-	end
-
-	for i = 1, num_samples do
-		local n = xoshiro256.random(state, num_buckets)
-		buckets[n] = buckets[n] + 1
-	end
-
-	local expected = num_samples / num_buckets
-	local chi2 = 0
-	for i = 1, num_buckets do
-		local diff = buckets[i] - expected
-		chi2 = chi2 + (diff * diff) / expected
-	end
-
-	return chi2
-end
-
-local function distribution_test(state)
-	local total_runs = 100
-	local dof = total_runs * 9
-	local z_score = 1.64485
-	local fraction = 2 / (9 * dof)
-	local base = 1 - fraction + z_score * math.sqrt(fraction)
-	local max_allowed_sum = dof * (base * base * base)
-
-	local chi2_sum = 0
-	for _ = 1, total_runs do
-		chi2_sum = chi2_sum + calculate_chi_square(state)
-	end
-
-	print(string.format("Runs: %d | Total DoF: %d", total_runs, dof))
-	print(string.format("Accumulated Chi-square: %.4f (Max allowed: %.4f)", chi2_sum, max_allowed_sum))
-
-	assert(chi2_sum < max_allowed_sum, "Failed distribution test!")
-	print("Distribution test passed!")
-end
-
-local function run_test_case(seed)
-	local state = xoshiro256.seed(seed)
-	print("Running tests for seed: " .. seed)
-
-	simple_test(state)
-	saved_state_test(state)
-	distribution_test(state)
-
-	print('---------- Test case passed! ----------')
-end
-
 function init(self)
-	run_test_case('01234567890123456789')
-	run_test_case(os.time())
+	print("Here is how you normally create new generator state:")
+	local state_52bit = xoshiro256.seed(os.time())
 
-	local max_safe_int = 9007199254740991
-	local state = xoshiro256.seed(os.time())
-	for _ = 1, 10 do
-		local rand_value = xoshiro256.random(state)
-		local new_seed = math.floor(rand_value * (max_safe_int - 1)) + 1
-		run_test_case(new_seed)
+	print("However lua numbers are stored as doubles and cannot represent full 64 bits of precision, so you can use decimal string instead:")
+	local state_64bit = xoshiro256.seed('01234567890123456789')
+
+	print("Here is how you generate numbers. API mirrors the behavior of math.random()")
+	local num1 = xoshiro256.random(state_64bit)
+	local num2 = xoshiro256.random(state_64bit, 100)
+	local num3 = xoshiro256.random(state_64bit, 5, 42)
+
+	print("Number in range [0, 1): " .. num1)
+	print("Number in range [1, 100]: " .. num2)
+	print("Number in range [5, 42]: " .. num3)
+
+	print("If you need fully deterministic system you can save and restore generator state:")
+	local saved_state = xoshiro256.to_string(state_64bit)
+	print("This produces string of four colon-separated decimal values: " .. saved_state)
+
+	print("So you can save this string however you want and restore it later:")
+	local restored_state = xoshiro256.from_string(saved_state)
+
+	print("If you need to clone generator state before continuing sequence (for tests, perhaps?), you can do it like this:")
+	local cloned_state = xoshiro256.clone(state_64bit)
+
+	print("Here is the proof that cloned and restored generators produce the exact same sequence:")
+	for _ = 1, 100 do
+		local original_num = xoshiro256.random(state_64bit)
+		local restored_num = xoshiro256.random(restored_state)
+		local cloned_num = xoshiro256.random(cloned_state)
+		assert(original_num == restored_num and original_num == cloned_num, "Generator state mismatch!")
 	end
 
-	print('Tests passed!')
+	print("You also can print generator state for debugging purposes, like this: " .. tostring(state_64bit))
 end
