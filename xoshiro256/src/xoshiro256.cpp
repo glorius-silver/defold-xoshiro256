@@ -177,20 +177,26 @@ static int L_seed_state(lua_State *L) {
     return 1;
 }
 
-//xoshiro256.clone(state) -> state
+// xoshiro256.clone(state [, out]) -> state
 static int L_clone_state(lua_State *L) {
     DM_LUA_STACK_CHECK(L, 1);
 
-    Xoshiro256State *old_st = check_state(L, 1);
-    Xoshiro256State *new_st = (Xoshiro256State *)lua_newuserdata(L, sizeof(Xoshiro256State));
+    Xoshiro256State *src = check_state(L, 1);
+    Xoshiro256State *dst;
 
-    new_st->s[0] = old_st->s[0];
-    new_st->s[1] = old_st->s[1];
-    new_st->s[2] = old_st->s[2];
-    new_st->s[3] = old_st->s[3];
+    if (lua_gettop(L) >= 2) {
+        dst = check_state(L, 2);
+        lua_pushvalue(L, 2);
+    } else {
+        dst = (Xoshiro256State *)lua_newuserdata(L, sizeof(Xoshiro256State));
+        luaL_getmetatable(L, XOSHIRO256_METATABLE);
+        lua_setmetatable(L, -2);
+    }
 
-    luaL_getmetatable(L, XOSHIRO256_METATABLE);
-    lua_setmetatable(L, -2);
+    dst->s[0] = src->s[0];
+    dst->s[1] = src->s[1];
+    dst->s[2] = src->s[2];
+    dst->s[3] = src->s[3];
 
     return 1;
 }
@@ -299,6 +305,21 @@ static int L_random(lua_State *L) {
     return 1;
 }
 
+// xoshiro256.float_range(state, min, max) -> number
+static int L_float_range(lua_State *L) {
+    DM_LUA_STACK_CHECK(L, 1);
+
+    Xoshiro256State *st = check_state(L, 1);
+    double min = (double)luaL_checknumber(L, 2);
+    double max = (double)luaL_checknumber(L, 3);
+
+    luaL_argcheck(L, min <= max, 2, "min must be <= max");
+
+    double r = xoshiro256pp_next_double(st);
+    lua_pushnumber(L, (lua_Number)(min + r * (max - min)));
+    return 1;
+}
+
 // __tostring metamethod for the state userdata
 static int L_state_tostring_meta(lua_State *L) {
     Xoshiro256State *st = check_state(L, 1);
@@ -316,6 +337,7 @@ static const luaL_reg Module_methods[] = {
     { "to_string",   L_state_to_string },
     { "from_string", L_string_to_state },
     { "random",      L_random          },
+    { "float_range", L_float_range     },
     { NULL,          NULL              }
 };
 

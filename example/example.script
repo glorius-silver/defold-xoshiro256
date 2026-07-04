@@ -14,6 +14,9 @@ function init(self)
 	print("Number in range [1, 100]: " .. num2)
 	print("Number in range [5, 42]: " .. num3)
 
+	print("You can also generate random numbers in floating ranges:")
+	print("Random number in range [0.56, 1.42): " .. xoshiro256.float_range(state_64bit, 0.56, 1.42))
+
 	print("If you need fully deterministic system you can save and restore generator state:")
 	local saved_state = xoshiro256.to_string(state_64bit)
 	print("This produces string of four colon-separated decimal values: " .. saved_state)
@@ -23,6 +26,10 @@ function init(self)
 
 	print("If you need to clone generator state before continuing sequence (for tests, perhaps?), you can do it like this:")
 	local cloned_state = xoshiro256.clone(state_64bit)
+	print("If you want to avoid userdata memory allocations you can also clone one existing state into another:")
+	local pre_existing_state = xoshiro256.seed(1)
+	xoshiro256.clone(state_64bit, pre_existing_state)
+	assert(xoshiro256.to_string(state_64bit) == xoshiro256.to_string(pre_existing_state))
 
 	print("Here is the proof that cloned and restored generators produce the exact same sequence:")
 	for _ = 1, 100 do

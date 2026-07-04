@@ -26,11 +26,27 @@
     returns:
     - name: value
       type: number
+  - name: float_range
+    type: function
+    desc: Generates a random number in floating range [m, n)
+    parameters:
+    - name: state
+      type: userdata
+    - name: m
+      type: number
+    - name: n
+      type: number
+    returns:
+    - name: value
+      type: number
   - name: clone
     type: function
     desc: Creates and returns an independent copy of the state
     parameters:
     - name: state
+      type: userdata
+    - name: out
+      optional: true
       type: userdata
     returns:
     - name: cloned_state

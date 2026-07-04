@@ -15,8 +15,9 @@ function xoshiro256.seed(seed) end
 
 ---Creates and returns an independent copy of the state
 ---@param state xoshiro256.state
+---@param out xoshiro256.state? optional state to clone into without memory allocations
 ---@return xoshiro256.state cloned_state
-function xoshiro256.clone(state) end
+function xoshiro256.clone(state, out) end
 
 ---Convert state to string. Used for saving the state. String is formed as 4 uint64 values separated by ':', e.g. "s0:s1:s2:s3".
 ---@param state xoshiro256.state
@@ -38,3 +39,10 @@ function xoshiro256.from_string(state_str) end
 ---@overload fun(state: xoshiro256.state, m: number): number
 ---@overload fun(state: xoshiro256.state): number
 function xoshiro256.random(state, m, n) end
+
+---Generates a random number in floating range [m, n)
+---@param state xoshiro256.state
+---@param m number
+---@param n number
+---@return number
+function xoshiro256.float_range(state, m, n) end
